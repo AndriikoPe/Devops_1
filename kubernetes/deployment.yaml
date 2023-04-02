@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejs-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nodejs-app
+  template:
+    metadata:
+      labels:
+        app: nodejs-app
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+        - name: nodejs
+          image: your-nodejs-app-image
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: nodejs-config
+              mountPath: /app/config
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: nginx-config
+        - name: nodejs-config
+          configMap:
+            name: nodejs-config
